@@ -44,9 +44,9 @@ You can start by looking through these `beginner` and `help-wanted` issues:
   
   
 #### Local development
-Before starting make sure you have `git`, `java` and `maven` installed.
+Before starting make sure you have `git`, `java` installed.
 The plugin can be developed locally by cloning this repository, applying your
-changes and building the jar running `mvn clean install`.
+changes and building the jar running `./gradlew clean build`.
 
 
 ## Pull Requests
@@ -94,7 +94,7 @@ core team. |
 
 First give a look at the project structure above on this page, clone the versionsupport of 
 the latest supported version and then make sure to rename the package and class, plus update 
-the pom file with the new version name.
+the build.gradle.kts with the new version name.
 
 At this point make sure to map the following aspects on the new NMS:
 - Pathfinders for goals and targets in `DespawnableProvider`

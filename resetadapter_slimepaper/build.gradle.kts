@@ -2,11 +2,6 @@ base {
     archivesName = "resetadapter-slimepaper"
 }
 
-repositories {
-    maven("https://repo.glaremasters.me/repository/concuncan/")
-    maven("https://repo.infernalsuite.com/repository/maven-snapshots/")
-    maven("https://repo.titanvale.net/releases/")
-}
 
 dependencies {
     compileOnly(project(":bedwars-api"))

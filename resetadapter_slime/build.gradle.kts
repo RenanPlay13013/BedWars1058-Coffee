@@ -2,9 +2,6 @@ base {
     archivesName = "resetadapter-slime"
 }
 
-repositories {
-    maven("https://repo.glaremasters.me/repository/concuncan/")
-}
 
 dependencies {
     compileOnly(project(":bedwars-api"))

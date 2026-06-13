@@ -8,20 +8,6 @@ version = "25.9"
 allprojects {
     group = rootProject.group
     version = rootProject.version
-
-    repositories {
-        mavenCentral()
-        mavenLocal()
-
-        maven("https://oss.sonatype.org/content/repositories/snapshots")
-        maven("https://repo.codemc.io/repository/nms/")
-        maven("https://repo.andrei1058.com/snapshots")
-        maven("https://repo.andrei1058.com/releases")
-
-        maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-        maven("https://hub.spigotmc.org/nexus/repository/public/")
-        maven("https://repo.papermc.io/repository/maven-public/")
-    }
 }
 
 subprojects {

@@ -557,74 +557,44 @@ public class v1_21_R3 extends VersionSupport {
 
     @Override
     public void sendPlayerSpawnPackets(Player respawned, IArena arena) {
-        if (respawned == null) return;
-        if (arena == null) return;
+        if (respawned == null || arena == null) return;
         if (!arena.isPlayer(respawned)) return;
-
-        // if method was used when the player was still in re-spawning screen
         if (arena.getRespawnSessions().containsKey(respawned)) return;
 
-        EntityPlayer entityPlayer = getPlayer(respawned);
+        Player target = respawned;
 
-        //VERY DANGEOUS
-        PacketPlayOutSpawnEntity show = new PacketPlayOutSpawnEntity(entityPlayer, new EntityTrackerEntry(entityPlayer.dV().getMinecraftWorld(), entityPlayer, 0, false, null, null ));
-        PacketPlayOutEntityVelocity playerVelocity = new PacketPlayOutEntityVelocity(entityPlayer);
-        // we send head rotation packet because sometimes on respawn others see him with bad rotation
-        PacketPlayOutEntityHeadRotation head = new PacketPlayOutEntityHeadRotation(entityPlayer, getCompressedAngle(entityPlayer.getBukkitYaw()));
+        if (!target.isOnline() || target.getWorld() == null) return;
 
-        // retrieve current armor and in-hand items
-        // we send a packet later for timing issues where other players do not see them
-        List<Pair<EnumItemSlot, ItemStack>> list = getPlayerEquipment(entityPlayer);
+        List<Player> viewers = new ArrayList<>();
+        viewers.addAll(arena.getPlayers());
+        viewers.addAll(arena.getSpectators());
 
+        for (Player viewer : viewers) {
+            if (viewer == null || viewer.equals(target)) continue;
+            if (!viewer.getWorld().equals(target.getWorld())) continue;
 
-        for (Player p : arena.getPlayers()) {
-            if (p == null) continue;
-            if (p.equals(respawned)) continue;
-            // if p is in re-spawning screen continue
-            if (arena.getRespawnSessions().containsKey(p)) continue;
+            double maxDist = arena.getRenderDistance();
+            if (viewer.getLocation().distanceSquared(target.getLocation()) > maxDist * maxDist) continue;
 
-            EntityPlayer boundTo = getPlayer(p);
-            if (p.getWorld().equals(respawned.getWorld())) {
-                if (respawned.getLocation().distance(p.getLocation()) <= arena.getRenderDistance()) {
-
-                    // send respawned player to regular players
-                    this.sendPackets(
-                            p, show, head, playerVelocity,
-                            new PacketPlayOutEntityEquipment(respawned.getEntityId(), list)
-                    );
-
-                    // send nearby players to respawned player
-                    // if the player has invisibility hide armor
-                    if (p.hasPotionEffect(PotionEffectType.INVISIBILITY)) {
-                        hideArmor(p, respawned);
-                    } else {
-
-                        PacketPlayOutSpawnEntity show2 = new PacketPlayOutSpawnEntity(entityPlayer, new EntityTrackerEntry(entityPlayer.dV().getMinecraftWorld(), entityPlayer, 0, false, null, null ));
-                        PacketPlayOutEntityVelocity playerVelocity2 = new PacketPlayOutEntityVelocity(boundTo);
-                        PacketPlayOutEntityHeadRotation head2 = new PacketPlayOutEntityHeadRotation(boundTo, getCompressedAngle(boundTo.getBukkitYaw()));
-                        this.sendPackets(respawned, show2, playerVelocity2, head2);
-
-                        showArmor(p, respawned);
-                    }
-                }
+            if (arena.getSpectators().contains(viewer)) {
+                viewer.hidePlayer(getPlugin(), target);
+                continue;
             }
+
+            viewer.showPlayer(getPlugin(), target);
+
+            showArmor(target, viewer);
         }
 
-        for (Player spectator : arena.getSpectators()) {
-            if (spectator == null) continue;
-            if (spectator.equals(respawned)) continue;
-            EntityPlayer boundTo = ((CraftPlayer) spectator).getHandle();
-            respawned.hidePlayer(getPlugin(), spectator);
-            if (spectator.getWorld().equals(respawned.getWorld())) {
-                if (respawned.getLocation().distance(spectator.getLocation()) <= arena.getRenderDistance()) {
+        for (Player other : arena.getPlayers()) {
+            if (other == null || other.equals(target)) continue;
 
-                    // send respawned player to spectator
-                    this.sendPackets(
-                            spectator, show, playerVelocity,
-                            new PacketPlayOutEntityEquipment(respawned.getEntityId(), list),
-                            new PacketPlayOutEntityHeadRotation(entityPlayer, getCompressedAngle(entityPlayer.getBukkitYaw()))
-                    );
-                }
+            if (!other.getWorld().equals(target.getWorld())) continue;
+
+            if (target.getLocation().distanceSquared(other.getLocation())
+                    <= arena.getRenderDistance() * arena.getRenderDistance()) {
+
+                target.showPlayer(getPlugin(), other);
             }
         }
     }
